@@ -109,10 +109,6 @@ func (ft *FieldType) EvalType() EvalType {
 		return ETDuration
 	case mysql.TypeJSON:
 		return ETJson
-	case mysql.TypeEnum, mysql.TypeSet:
-		if ft.Flag&mysql.EnumSetAsIntFlag > 0 {
-			return ETInt
-		}
 	}
 	return ETString
 }
@@ -332,8 +328,6 @@ func (ft *FieldType) RestoreAsCastType(ctx *format.RestoreCtx, explicitCharset b
 		ctx.WriteKeyWord("DOUBLE")
 	case mysql.TypeFloat:
 		ctx.WriteKeyWord("FLOAT")
-	case mysql.TypeYear:
-		ctx.WriteKeyWord("YEAR")
 	}
 }
 

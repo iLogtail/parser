@@ -79,8 +79,12 @@ const (
 	ActionAlterTableAlterPartition      ActionType = 46
 	ActionRenameTables                  ActionType = 47
 	ActionDropIndexes                   ActionType = 48
-	ActionAlterTableAttributes          ActionType = 49
-	ActionAlterTablePartitionAttributes ActionType = 50
+)
+
+const (
+	// AddIndexStr is a string related to the operation of "add index".
+	AddIndexStr      = "add index"
+	AddPrimaryKeyStr = "add primary key"
 )
 
 var actionMap = map[ActionType]string{
@@ -90,7 +94,7 @@ var actionMap = map[ActionType]string{
 	ActionDropTable:                     "drop table",
 	ActionAddColumn:                     "add column",
 	ActionDropColumn:                    "drop column",
-	ActionAddIndex:                      "add index",
+	ActionAddIndex:                      AddIndexStr,
 	ActionDropIndex:                     "drop index",
 	ActionAddForeignKey:                 "add foreign key",
 	ActionDropForeignKey:                "drop foreign key",
@@ -115,7 +119,7 @@ var actionMap = map[ActionType]string{
 	ActionRepairTable:                   "repair table",
 	ActionSetTiFlashReplica:             "set tiflash replica",
 	ActionUpdateTiFlashReplicaStatus:    "update tiflash replica status",
-	ActionAddPrimaryKey:                 "add primary key",
+	ActionAddPrimaryKey:                 AddPrimaryKeyStr,
 	ActionDropPrimaryKey:                "drop primary key",
 	ActionCreateSequence:                "create sequence",
 	ActionAlterSequence:                 "alter sequence",
@@ -131,8 +135,6 @@ var actionMap = map[ActionType]string{
 	ActionAlterCheckConstraint:          "alter check constraint",
 	ActionAlterTableAlterPartition:      "alter partition",
 	ActionDropIndexes:                   "drop multi-indexes",
-	ActionAlterTableAttributes:          "alter table attributes",
-	ActionAlterTablePartitionAttributes: "alter table partition attributes",
 }
 
 // String return current ddl action in string
@@ -213,9 +215,6 @@ type Job struct {
 	SchemaState SchemaState     `json:"schema_state"`
 	// SnapshotVer means snapshot version for this job.
 	SnapshotVer uint64 `json:"snapshot_ver"`
-	// RealStartTS uses timestamp allocated by TSO.
-	// Now it's the TS when we actually start the job.
-	RealStartTS uint64 `json:"real_start_ts"`
 	// StartTS uses timestamp allocated by TSO.
 	// Now it's the TS when we put the job to TiKV queue.
 	StartTS uint64 `json:"start_ts"`

@@ -16,7 +16,6 @@ package ast_test
 import (
 	. "github.com/pingcap/check"
 	. "github.com/pingcap/parser/ast"
-	"github.com/pingcap/parser/format"
 )
 
 var _ = Suite(&testDDLSuite{})
@@ -28,7 +27,7 @@ func (ts *testDDLSuite) TestDDLVisitorCover(c *C) {
 	ce := &checkExpr{}
 	constraint := &Constraint{Keys: []*IndexPartSpecification{{Column: &ColumnName{}}, {Column: &ColumnName{}}}, Refer: &ReferenceDef{}, Option: &IndexOption{}}
 
-	alterTableSpec := &AlterTableSpec{Constraint: constraint, Options: []*TableOption{{}}, NewTable: &TableName{}, NewColumns: []*ColumnDef{{Name: &ColumnName{}}}, OldColumnName: &ColumnName{}, Position: &ColumnPosition{RelativeColumn: &ColumnName{}}, PlacementSpecs: []*PlacementSpec{{}, {}}, AttributesSpec: &AttributesSpec{}}
+	alterTableSpec := &AlterTableSpec{Constraint: constraint, Options: []*TableOption{{}}, NewTable: &TableName{}, NewColumns: []*ColumnDef{{Name: &ColumnName{}}}, OldColumnName: &ColumnName{}, Position: &ColumnPosition{RelativeColumn: &ColumnName{}}, PlacementSpecs: []*PlacementSpec{{}, {}}}
 
 	stmts := []struct {
 		node             Node
@@ -205,16 +204,6 @@ func (ts *testDDLSuite) TestDDLConstraintRestore(c *C) {
 		return node.(*CreateTableStmt).Constraints[0]
 	}
 	RunNodeRestoreTest(c, testCases, "CREATE TABLE child (id INT, parent_id INT, %s)", extractNodeFunc)
-
-	specialCommentCases := []NodeRestoreTestCase{
-		{"PRIMARY KEY (id) CLUSTERED", "PRIMARY KEY(`id`) /*T![clustered_index] CLUSTERED */"},
-		{"primary key (id) NONCLUSTERED", "PRIMARY KEY(`id`) /*T![clustered_index] NONCLUSTERED */"},
-		{"PRIMARY KEY (id) /*T![clustered_index] CLUSTERED */", "PRIMARY KEY(`id`) /*T![clustered_index] CLUSTERED */"},
-		{"primary key (id) /*T![clustered_index] NONCLUSTERED */", "PRIMARY KEY(`id`) /*T![clustered_index] NONCLUSTERED */"},
-	}
-	RunNodeRestoreTestWithFlags(c, specialCommentCases,
-		"CREATE TABLE child (id INT, parent_id INT, %s)",
-		extractNodeFunc, format.DefaultRestoreFlags|format.RestoreTiDBSpecialComment)
 }
 
 func (ts *testDDLSuite) TestDDLColumnOptionRestore(c *C) {

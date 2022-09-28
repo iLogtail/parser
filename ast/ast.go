@@ -137,11 +137,9 @@ type ResultField struct {
 }
 
 // ResultSetNode interface has a ResultFields property, represents a Node that returns result set.
-// Implementations include SelectStmt, SubqueryExpr, TableSource, TableName, Join and SetOprStmt.
+// Implementations include SelectStmt, SubqueryExpr, TableSource, TableName and Join.
 type ResultSetNode interface {
 	Node
-
-	resultSet()
 }
 
 // SensitiveStmtNode overloads StmtNode and provides a SecureText method.

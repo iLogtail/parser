@@ -162,7 +162,6 @@ var tokenMap = map[string]int{
 	"AS":                       as,
 	"ASC":                      asc,
 	"ASCII":                    ascii,
-	"ATTRIBUTES":               attributes,
 	"AUTO_ID_CACHE":            autoIdCache,
 	"AUTO_INCREMENT":           autoIncrement,
 	"AUTO_RANDOM":              autoRandom,
@@ -190,7 +189,6 @@ var tokenMap = map[string]int{
 	"BOOLEAN":                  booleanType,
 	"BOTH":                     both,
 	"BOUND":                    bound,
-	"BRIEF":                    briefType,
 	"BTREE":                    btree,
 	"BUCKETS":                  buckets,
 	"BUILTINS":                 builtins,
@@ -294,12 +292,10 @@ var tokenMap = map[string]int{
 	"DISTINCTROW":              distinct,
 	"DIV":                      div,
 	"DO":                       do,
-	"DOT":                      dotType,
 	"DOUBLE":                   doubleType,
 	"DRAINER":                  drainer,
 	"DROP":                     drop,
 	"DUAL":                     dual,
-	"DUMP":                     dump,
 	"DUPLICATE":                duplicate,
 	"DYNAMIC":                  dynamic,
 	"ELSE":                     elseKwd,
@@ -360,7 +356,6 @@ var tokenMap = map[string]int{
 	"GROUP":                    group,
 	"HASH":                     hash,
 	"HAVING":                   having,
-	"HELP":                     help,
 	"HIGH_PRIORITY":            highPriority,
 	"HISTORY":                  history,
 	"HISTOGRAM":                histogram,
@@ -496,7 +491,6 @@ var tokenMap = map[string]int{
 	"NULLS":                    nulls,
 	"NUMERIC":                  numericType,
 	"NVARCHAR":                 nvarcharType,
-	"OF":                       of,
 	"OFF":                      off,
 	"OFFSET":                   offset,
 	"ON_DUPLICATE":             onDuplicate,
@@ -527,7 +521,6 @@ var tokenMap = map[string]int{
 	"PER_TABLE":                per_table,
 	"PESSIMISTIC":              pessimistic,
 	"PLACEMENT":                placement,
-	"PLAN":                     plan,
 	"PLUGINS":                  plugins,
 	"POLICY":                   policy,
 	"POSITION":                 position,
@@ -535,7 +528,6 @@ var tokenMap = map[string]int{
 	"PRECEDING":                preceding,
 	"PRECISION":                precisionType,
 	"PREPARE":                  prepare,
-	"PRESERVE":                 preserve,
 	"PRIMARY":                  primary,
 	"PRIVILEGES":               privileges,
 	"PROCEDURE":                procedure,
@@ -557,7 +549,6 @@ var tokenMap = map[string]int{
 	"REBUILD":                  rebuild,
 	"RECENT":                   recent,
 	"RECOVER":                  recover,
-	"RECREATOR":                recreator,
 	"RECURSIVE":                recursive,
 	"REDUNDANT":                redundant,
 	"REFERENCES":               references,
@@ -762,7 +753,6 @@ var tokenMap = map[string]int{
 	"VARIABLES":                variables,
 	"VARIANCE":                 varPop,
 	"VARYING":                  varying,
-	"VERBOSE":                  verboseType,
 	"VOTER":                    voter,
 	"VIEW":                     view,
 	"VIRTUAL":                  virtual,
@@ -816,7 +806,6 @@ var btFuncTokenMap = map[string]int{
 	"SUM":                   builtinSum,
 	"SYSDATE":               builtinSysDate,
 	"SYSTEM_USER":           builtinUser,
-	"TRANSLATE":             builtinTranslate,
 	"TRIM":                  builtinTrim,
 	"VARIANCE":              builtinVarPop,
 	"VAR_POP":               builtinVarPop,
@@ -996,4 +985,39 @@ func handleIdent(lval *yySymType) int {
 	}
 	lval.ident = cs
 	return underscoreCS
+}
+
+// SpecialCommentsController controls whether special comments like `/*T![xxx] yyy */`
+// can be parsed as `yyy`. To add such rules, please use SpecialCommentsController.Register().
+// For example:
+//     SpecialCommentsController.Register("30100");
+// Now the parser will treat
+//   select a, /*T![30100] mysterious_keyword */ from t;
+// and
+//   select a, mysterious_keyword from t;
+// equally.
+// Similar special comments without registration are ignored by parser.
+var SpecialCommentsController = specialCommentsCtrl{
+	supportedFeatures: map[string]struct{}{},
+}
+
+type specialCommentsCtrl struct {
+	supportedFeatures map[string]struct{}
+}
+
+func (s *specialCommentsCtrl) Register(featureID string) {
+	s.supportedFeatures[featureID] = struct{}{}
+}
+
+func (s *specialCommentsCtrl) Unregister(featureID string) {
+	delete(s.supportedFeatures, featureID)
+}
+
+func (s *specialCommentsCtrl) ContainsAll(featureIDs []string) bool {
+	for _, f := range featureIDs {
+		if _, found := s.supportedFeatures[f]; !found {
+			return false
+		}
+	}
+	return true
 }
